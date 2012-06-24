@@ -1,0 +1,55 @@
+yummycacher
+===========
+
+What is it?
+-----------
+
+yummycacher provides a foo for your bar.
+
+The goal is for yummycacher to ...
+
+Requirements
+------------
+
+yummycacher requires a C compiler. No other libraries are required.
+
+Building
+--------
+
+If you clone yummycacher from the git repository,
+Autotools needs to be run first (the -i flag is needed to install missing files
+such as 'compile' and 'missing'):
+>>> autoreconf -i
+
+If you got yummycacher from a source archive, it's just:
+>>> ./configure
+>>> make
+>>> make install
+
+After running make, yummycacher can be run in the source tree with:
+>>> ./yummycacher
+
+You can follow the generic instructions for installation in INSTALL.
+
+Contributing
+------------
+
+Fork it on GitHub, hack away and then send a pull request.
+
+See more at https://github.com/rosslagerwall/yummycacher
+
+Licensing
+---------
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Please see the file called COPYING for more details.
+
+Latest Version
+--------------
+
+Details of the latest version can be found on the yummycacher project page at
+https://github.com/rosslagerwall/yummycacher

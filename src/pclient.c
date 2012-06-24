@@ -16,7 +16,6 @@
 */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <glib.h>
 #include <sys/stat.h>
@@ -42,10 +41,8 @@ void mkdir_p(char *path)
     int i;
 
     for (i = 0; i < n_components; i++) {
-        printf("lol=%s\n", components[i]);
         strcat(pathbuf, components[i]);
         strcat(pathbuf, "/");
-        printf("otto=%s\n", pathbuf);
         mkdir(pathbuf, 0777);
     }
 
@@ -102,6 +99,8 @@ pclient_free(struct ProxyClient *client)
     bufferevent_free(client->bev);
     fclose(client->sink);
     free(client);
+
+    g_debug("ProxyClient disconnect");
 }
 
 void
@@ -159,7 +158,6 @@ pclient_event_cb(struct bufferevent *bev, short events, void *ctx)
     } else if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR)) {
         struct ProxyClient *client = ctx;
         pclient_free(client);
-        printf("freeing proxy client\n");
     }
 }
 
@@ -167,5 +165,4 @@ void
 pclient_register(struct ProxyClient *client, struct ProxyServer *serv)
 {
     client->observers = g_list_prepend(client->observers, serv);
-    printf("New server registered\n");
 }

@@ -64,6 +64,8 @@ pserv_free(struct ProxyServer *serv)
         close(serv->proxy_fd);
     bufferevent_free(serv->bev);
     free(serv);
+
+    g_debug("ProxyServer disconnect");
 }
 
 /* Adds the location to the base path and makes sure that the path is safe
@@ -117,18 +119,13 @@ void
 pserv_write_cb(struct bufferevent *bev, void *ctx)
 {
     struct ProxyServer *serv = ctx;
-    //printf("write ready\n");
     if (serv->state == PS_SEND) {
         struct evbuffer *output = bufferevent_get_output(serv->bev);
-        //printf("lenrem=%lu\n", evbuffer_get_length(output));
         if ((serv->n_avail - serv->n_written) > 0) {
             int n_towrite = MIN(32767, serv->n_avail - serv->n_written);
-            //printf("tow %d rem %d\n", n_towrite, serv->n_avail);
             int ret = evbuffer_read(output, serv->proxy_fd, n_towrite);
-            //printf("actually read %d\n", ret);
             serv->n_written += ret;
         } else if (serv->n_written == serv->n_tot) {
-            printf("close!\n");
             pserv_free(serv);
         }
     }
@@ -141,7 +138,6 @@ pserv_event_cb(struct bufferevent *bev, short events, void *ctx)
         perror("Error from bufferevent");
         exit(1);
     } else if (events & BEV_EVENT_EOF) {
-        printf("serv eof");
         struct ProxyServer *serv = ctx;
         pserv_free(serv);
     }
@@ -171,8 +167,10 @@ pserv_start_transfer(struct ProxyServer *serv)
         int ret = evbuffer_read(output, serv->proxy_fd, n_towrite);
         serv->n_avail = serv->n_tot;
         serv->n_written = ret;
-        printf("starting transfer\n");
+
+        g_message("Sending cached content for %s", serv->location);
     } else {
+        g_message("Proxying content for %s", serv->location);
         serv->state = PS_SENDH;
         cxmap_register(serv);
     }
@@ -185,7 +183,6 @@ void
 pserv_data_updated_cb(struct ProxyServer *serv, int n, int length)
 {
     if (serv->state == PS_SENDH) {
-        printf("length cb\n");
         struct evbuffer *output = bufferevent_get_output(serv->bev);
         serv->state = PS_SEND;
         char *path = g_strconcat(serv->path, ".tmp", NULL);
@@ -200,7 +197,6 @@ pserv_data_updated_cb(struct ProxyServer *serv, int n, int length)
     }
 
     if (serv->state == PS_SEND) {
-        //printf("got %d bytes\n", n);
         struct evbuffer *output = bufferevent_get_output(serv->bev);
         serv->n_avail = n;
         if (evbuffer_get_length(output) == 0) {

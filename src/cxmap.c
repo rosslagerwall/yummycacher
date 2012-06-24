@@ -40,9 +40,9 @@ cxmap_register(struct ProxyServer *serv)
         struct event_base *base = bufferevent_get_base(serv->bev);
         client = pclient_new(base, serv->location, serv->path);
         g_hash_table_insert(tbl, client->location, client);
-        printf("Creating a new ProxyClient\n");
+        g_debug("Creating a new ProxyClient object for %s", serv->location);
     } else {
-        printf("Reusing old one\n");
+        g_debug("Reusing an existing ProxyClient for %s", serv->location);
     }
     pclient_register(client, serv);
 }

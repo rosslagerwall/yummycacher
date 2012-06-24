@@ -19,13 +19,13 @@
 #include "pserv.h"
 #include "dns.h"
 
+#include <glib.h>
 #include <event2/event.h>
 #include <event2/bufferevent.h>
 #include <event2/listener.h>
 
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 
 
@@ -42,10 +42,12 @@ listener_accept_cb(struct evconnlistener *listener, evutil_socket_t sock,
     bufferevent_setcb(bev, pserv_read_cb, pserv_write_cb, pserv_event_cb,
                       serv);
     bufferevent_enable(bev, EV_READ|EV_WRITE);
+
+    g_debug("Received a connection");
 }
 
 /* Start the server listening on 8080 and start the first client. */
-static void
+static int
 start_loop(void)
 {
     struct event_base *base;
@@ -53,8 +55,8 @@ start_loop(void)
 
     base = event_base_new();
     if (base == NULL) {
-        puts("Could not open event base!");
-        exit(1);
+        g_critical("Could not open event base!");
+        return 1;
     }
 
     dns_init(base);
@@ -73,11 +75,13 @@ start_loop(void)
         exit(1);
     }
 
+    g_message("Starting up main loop");
     event_base_dispatch(base);
+
+    return 0;
 }
 
 int main(int argc, char **argv) {
     cxmap_init();
-    start_loop();
-    return 0;
+    return start_loop();
 }

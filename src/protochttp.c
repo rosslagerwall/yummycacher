@@ -83,10 +83,8 @@ pchttp_get_length(struct ProtoCHttp *proto)
     char **lineptr = lines;
     int length = 0;
     while (*lineptr) {
-        if (g_str_has_prefix(*lineptr, "Content-Length:")) {
-            puts(*lineptr);
+        if (g_str_has_prefix(*lineptr, "Content-Length:"))
             sscanf(*lineptr, "Content-Length: %d", &length);
-        }
 
         lineptr++;
     }

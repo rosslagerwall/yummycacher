@@ -69,7 +69,7 @@ pserv_free(struct ProxyServer *serv)
 }
 
 /* Adds the location to the base path and makes sure that the path is safe
-   (i.e. doesn't contain any ..).
+   (i.e. doesn't contain any .. or .).
 */
 static char *get_restricted_path(char *path)
 {
@@ -87,7 +87,7 @@ static char *get_restricted_path(char *path)
 
     /* Iterater through the path components, removing empty components or .. */
     while (*cur) {
-        if (strcmp(*cur, "..") && strcmp(*cur, "")) {
+        if (strcmp(*cur, "..") && strcmp(*cur, "") && strcmp(*cur, ".")) {
             g_strlcat(result, "/", 1024);
             g_strlcat(result, *cur, 1024);
         }

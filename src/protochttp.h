@@ -24,6 +24,8 @@ struct ProtoCHttp {
     /* private */
     char *buf;
     int bufsize;
+
+    int http_length;
 };
 
 struct ProtoCHttp *
@@ -34,9 +36,6 @@ pchttp_free(struct ProtoCHttp *proto);
 
 int
 pchttp_add_data(struct ProtoCHttp *proto, char *data, int n, char **out);
-
-int
-pchttp_get_length(struct ProtoCHttp *proto);
 
 char *
 pchttp_get_request(struct ProtoCHttp *proto, char *location);

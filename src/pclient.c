@@ -58,7 +58,6 @@ pclient_new(struct event_base *base, char *location, char *path)
 
     /* private */
     client->n_written = 0;
-    client->length = 0;
     client->observers = NULL;
     client->proto = pchttp_new();
     client->state = PC_SEND;
@@ -130,8 +129,7 @@ pclient_read_cb(struct bufferevent *bev, void *ctx)
                 fwrite(out, 1, ret, client->sink);
                 fflush(client->sink);
                 client->n_written = ret;
-                client->length = pchttp_get_length(client->proto);
-                pclient_notify_all_data(client, client->n_written, client->length);
+                pclient_notify_all_data(client, client->n_written, client->proto->http_length);
                 free(out);
                 client->state = PC_RECV;
             }
@@ -139,7 +137,7 @@ pclient_read_cb(struct bufferevent *bev, void *ctx)
             fwrite(buf, 1, n, client->sink);
             fflush(client->sink);
             client->n_written += n;
-            pclient_notify_all_data(client, client->n_written, client->length);
+            pclient_notify_all_data(client, client->n_written, client->proto->http_length);
         }
     }
 }

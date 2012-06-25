@@ -31,6 +31,8 @@ const char REQUEST[] = "GET %s HTTP/1.0\r\n"
     "User-Agent: yummycacher\r\n"
     "Host: archive.fedoraproject.org\r\n\r\n";
 
+void
+pchttp_parse_headers(struct ProtoCHttp *proto);
 
 struct ProtoCHttp *
 pchttp_new(void)
@@ -42,6 +44,8 @@ pchttp_new(void)
     proto->buf = malloc(MAX_REQUEST_SIZE);
     proto->buf[0] = '\0';
     proto->bufsize = 0;
+
+    proto->http_length = 0;
 
     return proto;
 }
@@ -65,7 +69,7 @@ pchttp_add_data(struct ProtoCHttp *proto, char *data, int n, char **out)
     if ((ptr = strstr(proto->buf, "\r\n\r\n")) != NULL) {
         /* parse the headers */
         ptr[0] = '\0';
-///        http_request_parse_headers(req);
+        pchttp_parse_headers(proto);
 
         ptr += 4;
         size_t count = proto->bufsize - (ptr - proto->buf);
@@ -76,21 +80,18 @@ pchttp_add_data(struct ProtoCHttp *proto, char *data, int n, char **out)
     return 0;
 }
 
-int
-pchttp_get_length(struct ProtoCHttp *proto)
+void
+pchttp_parse_headers(struct ProtoCHttp *proto)
 {
     char **lines = g_strsplit(proto->buf, "\r\n", 0);
     char **lineptr = lines;
-    int length = 0;
     while (*lineptr) {
         if (g_str_has_prefix(*lineptr, "Content-Length:"))
-            sscanf(*lineptr, "Content-Length: %d", &length);
+            sscanf(*lineptr, "Content-Length: %d", &proto->http_length);
 
         lineptr++;
     }
     g_strfreev(lines);
-
-    return length;
 }
 
 char *

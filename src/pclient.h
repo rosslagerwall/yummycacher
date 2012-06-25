@@ -41,7 +41,6 @@ struct ProxyClient {
     char *orig_path;
     FILE *sink;
     GList *observers;
-    int length;
     int n_written;
 };
 

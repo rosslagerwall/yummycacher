@@ -26,8 +26,7 @@
 
 void
 pclient_read_cb(struct bufferevent *bev, void *ctx);
-void
-pclient_write_cb(struct bufferevent *bev, void *ctx);
+
 void
 pclient_event_cb(struct bufferevent *bev, short events, void *ctx);
 
@@ -70,7 +69,7 @@ pclient_new(struct event_base *base, char *location, char *path)
     /* Create a socket to connect to the remote http server */
     client->bev = bufferevent_socket_new(base, -1,
                                          BEV_OPT_CLOSE_ON_FREE);
-    bufferevent_setcb(client->bev, pclient_read_cb, pclient_write_cb,
+    bufferevent_setcb(client->bev, pclient_read_cb, NULL,
                       pclient_event_cb, client);
     bufferevent_enable(client->bev, EV_READ|EV_WRITE);
 
@@ -140,11 +139,6 @@ pclient_read_cb(struct bufferevent *bev, void *ctx)
             pclient_notify_all_data(client, client->n_written, client->proto->http_length);
         }
     }
-}
-
-void
-pclient_write_cb(struct bufferevent *bev, void *ctx)
-{
 }
 
 void

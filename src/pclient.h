@@ -49,9 +49,6 @@ struct ProxyClient *
 pclient_new(struct event_base *base, char *location, char *path);
 
 void
-pclient_free(struct ProxyClient *client);
-
-void
 pclient_register(struct ProxyClient *client, struct ProxyServer *serv);
 
 #endif

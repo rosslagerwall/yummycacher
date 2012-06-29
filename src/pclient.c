@@ -23,6 +23,7 @@
 #include <event2/buffer.h>
 #include "pclient.h"
 #include "dns.h"
+#include "cxmap.h"
 
 void
 pclient_read_cb(struct bufferevent *bev, void *ctx);
@@ -89,6 +90,7 @@ pclient_new(struct event_base *base, char *location, char *path)
 void
 pclient_free(struct ProxyClient *client)
 {
+    cxmap_unregister(client);
     rename(client->path, client->orig_path);
     pchttp_free(client->proto);
     free(client->location);

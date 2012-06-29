@@ -19,11 +19,15 @@
 #define CXMAP_H
 
 struct ProxyServer;
+struct ProxyClient;
 
 void
 cxmap_init(void);
 
 void
 cxmap_register(struct ProxyServer *serv);
+
+void
+cxmap_unregister(struct ProxyClient *client);
 
 #endif

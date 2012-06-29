@@ -98,6 +98,7 @@ pclient_free(struct ProxyClient *client)
     free(client->orig_path);
     bufferevent_free(client->bev);
     fclose(client->sink);
+    g_list_free(client->observers);
     free(client);
 
     g_debug("ProxyClient disconnect");

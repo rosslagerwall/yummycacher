@@ -180,8 +180,6 @@ pserv_start_transfer(struct ProxyServer *serv)
         cxmap_register(serv);
     }
     return;
-
-
 }
 
 void

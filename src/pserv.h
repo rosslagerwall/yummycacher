@@ -57,6 +57,6 @@ void
 pserv_event_cb(struct bufferevent *bev, short events, void *ctx);
 
 void
-pserv_data_updated_cb(struct ProxyServer *serv, int n, int length);
+pserv_data_updated_cb(struct ProxyServer *serv, char *path, int n, int length);
 
 #endif

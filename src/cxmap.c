@@ -34,15 +34,22 @@ cxmap_init(void)
 void
 cxmap_register(struct ProxyServer *serv)
 {
-    struct ProxyClient *client = g_hash_table_lookup(tbl, serv->location);
-    if (!client) {
-        /* create new ProxyClient */
+    struct ProxyClient *client;
+    if (!serv->path) {
         struct event_base *base = bufferevent_get_base(serv->bev);
-        client = pclient_new(base, serv->location, serv->path);
-        g_hash_table_insert(tbl, client->location, client);
+        client = pclient_new(base, serv->location, NULL);
         g_debug("Creating a new ProxyClient object for %s", serv->location);
     } else {
-        g_debug("Reusing an existing ProxyClient for %s", serv->location);
+        client = g_hash_table_lookup(tbl, serv->location);
+        if (!client) {
+            /* create new ProxyClient */
+            struct event_base *base = bufferevent_get_base(serv->bev);
+            client = pclient_new(base, serv->location, serv->path);
+            g_hash_table_insert(tbl, client->location, client);
+            g_debug("Creating a new ProxyClient object for %s", serv->location);
+        } else {
+            g_debug("Reusing an existing ProxyClient for %s", serv->location);
+        }
     }
     pclient_register(client, serv);
 }

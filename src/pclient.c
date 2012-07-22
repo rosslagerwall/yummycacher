@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <glib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -62,9 +63,17 @@ pclient_new(struct event_base *base, char *location, char *path)
     client->proto = pchttp_new();
     client->state = PC_SEND;
     client->location = strdup(location);
-    client->path = g_strconcat(path, ".tmp", NULL);
-    client->orig_path = strdup(path);
-    mkdir_p(path);
+    if (path) {
+        client->path = g_strconcat(path, ".tmp", NULL);
+        client->orig_path = strdup(path);
+        mkdir_p(path);
+    } else {
+        /* If path is NULL, we don't want to store the file permanently
+           so download it to a temporary file.
+           Set orig_path to NULL since there is no original path. */
+        client->path = g_strdup(tmpnam(NULL)); /* FIXME */
+        client->orig_path = NULL;
+    }
     client->sink = fopen(client->path, "w");
 
     /* Create a socket to connect to the remote http server */
@@ -90,12 +99,19 @@ pclient_new(struct event_base *base, char *location, char *path)
 void
 pclient_free(struct ProxyClient *client)
 {
-    cxmap_unregister(client);
-    rename(client->path, client->orig_path);
+    /* If there was an original path, it means that the we want to store the
+       file permanently; so rename it into place. */
+    if (client->orig_path) {
+        cxmap_unregister(client);
+        rename(client->path, client->orig_path);
+        free(client->orig_path);
+    } else {
+        /* Otherwise just delete the temporary file. */
+        unlink(client->path);
+    }
+    g_free(client->path);
     pchttp_free(client->proto);
     free(client->location);
-    g_free(client->path);
-    free(client->orig_path);
     bufferevent_free(client->bev);
     fclose(client->sink);
     g_list_free(client->observers);
@@ -109,7 +125,7 @@ pclient_notify_all_data(struct ProxyClient *client, int n, int length)
 {
     GList *cur = client->observers;
     while (cur != NULL) {
-        pserv_data_updated_cb(cur->data, n, length);
+        pserv_data_updated_cb(cur->data, client->path, n, length);
         cur = cur->next;
     }
 }

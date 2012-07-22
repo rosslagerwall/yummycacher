@@ -73,6 +73,11 @@ pserv_free(struct ProxyServer *serv)
 */
 static char *get_restricted_path(char *path)
 {
+    /* We don't want to cache repomd.xml so return NULL to signify no path. */
+    if (g_str_has_suffix(path, "/repomd.xml")) {
+        return NULL;
+    }
+
     char *result = malloc(1024);
     char *base = "tree";
     char **pathv = g_strsplit(path, "/", 0);
@@ -180,14 +185,12 @@ pserv_start_transfer(struct ProxyServer *serv)
 }
 
 void
-pserv_data_updated_cb(struct ProxyServer *serv, int n, int length)
+pserv_data_updated_cb(struct ProxyServer *serv, char *path, int n, int length)
 {
     if (serv->state == PS_SENDH) {
         struct evbuffer *output = bufferevent_get_output(serv->bev);
         serv->state = PS_SEND;
-        char *path = g_strconcat(serv->path, ".tmp", NULL);
         serv->proxy_fd = open(path, O_RDONLY);
-        g_free(path);
 
         char *headers = pshttp_get_response(serv->proto, length, 1);
         evbuffer_add(output, headers, strlen(headers));

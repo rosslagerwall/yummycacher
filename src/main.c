@@ -18,6 +18,7 @@
 #include "cxmap.h"
 #include "pserv.h"
 #include "dns.h"
+#include "options.h"
 
 #include <glib.h>
 #include <event2/event.h>
@@ -82,6 +83,10 @@ start_loop(void)
 }
 
 int main(int argc, char **argv) {
+    if (!parse_options(argc, argv) || y_options.help) {
+        print_usage(argv[0]);
+        return 1;
+    }
     cxmap_init();
     return start_loop();
 }

@@ -19,6 +19,7 @@
 #include "pserv.h"
 #include "dns.h"
 #include "options.h"
+#include "log.h"
 
 #include <glib.h>
 #include <event2/event.h>
@@ -82,11 +83,34 @@ start_loop(void)
     return 0;
 }
 
+void
+handler(int signum)
+{
+    log_close();
+    exit(0);
+}
+
+void
+setup_signals(void)
+{
+    struct sigaction sa;
+    sa.sa_flags = SA_SIGINFO;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = handler;
+    if (sigaction(SIGINT, &sa, NULL) == -1)
+        g_error("Error setting up signals");
+}
+
 int main(int argc, char **argv) {
+    int res;
     if (!parse_options(argc, argv) || y_options.help) {
         print_usage(argv[0]);
         return 1;
     }
+    setup_signals();
+    log_init();
     cxmap_init();
-    return start_loop();
+    res = start_loop();
+    log_close();
+    return res;
 }

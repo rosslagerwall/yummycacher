@@ -49,7 +49,7 @@ parse_options(int argc, char **argv)
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "r::u:p::l::fh", long_options,
+        c = getopt_long(argc, argv, "r:u:p:l:fh", long_options,
                         &option_index);
         if (c == -1)
             break;

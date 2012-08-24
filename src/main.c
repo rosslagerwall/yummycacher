@@ -101,6 +101,35 @@ setup_signals(void)
         g_error("Error setting up signals");
 }
 
+void
+daemonize(void)
+{
+    pid_t pid;
+
+    /* don't daemonize if the foreground option is set */
+    if (y_options.foreground)
+        return;
+
+    /* fork to inherit the process group ID of the parent */
+    pid = fork();
+    if (pid < 0)
+        g_error("can't daemonize");
+    if (pid != 0)
+        exit(0);
+
+    /* become a session leader and process group leader */
+    setsid();
+
+    fclose(stdin);
+    fclose(stdout);
+    fclose(stderr);
+
+    /* Note that we don't set the umask here because this program is expected to
+       be run by a user who expects the umask to be kept. Also, the working
+       directory is kept since the user may have specified a root relative to
+       it. */
+}
+
 int main(int argc, char **argv) {
     int res;
     if (!parse_options(argc, argv) || y_options.help) {
@@ -109,6 +138,7 @@ int main(int argc, char **argv) {
     }
     setup_signals();
     log_init();
+    daemonize();
     cxmap_init();
     res = start_loop();
     log_close();
